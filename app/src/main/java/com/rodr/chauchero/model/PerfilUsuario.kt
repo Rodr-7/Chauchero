@@ -1,13 +1,21 @@
 package com.rodr.chauchero.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "perfil_usuario")
 data class PerfilUsuario(
     @PrimaryKey(autoGenerate = true)
-    val id_perfil: Int = 0,
-    val nombre_perfil: String,
-    val salario_fijo: Int = 0,
-    val saldo_actual: Int = 0
+    @ColumnInfo(name = "id_perfil")
+    val idPerfil: Int = 0,
+
+    @ColumnInfo(name = "nombre_perfil")
+    val nombrePerfil: String,
+
+    @ColumnInfo(name = "salario_fijo")
+    val salarioFijo: Int,
+
+    @ColumnInfo(name = "saldo_actual")
+    val saldoActual: Int
 )

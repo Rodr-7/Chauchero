@@ -1,5 +1,6 @@
 package com.rodr.chauchero.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
@@ -17,11 +18,24 @@ import androidx.room.PrimaryKey
 )
 data class Gasto(
     @PrimaryKey(autoGenerate = true)
-    val id_gasto: Int = 0,
-    val id_perfil: Int,
-    val nombre_gasto: String,
+    @ColumnInfo(name = "id_gasto")
+    val idGasto: Int = 0,
+
+    @ColumnInfo(name = "id_perfil")
+    val idPerfil: Int,
+
+    @ColumnInfo(name = "nombre_gasto")
+    val nombreGasto: String,
+
+    @ColumnInfo(name = "categoria")
     val categoria: String,
+
+    @ColumnInfo(name = "prioridad")
     val prioridad: Prioridad,
+
+    @ColumnInfo(name = "valor")
     val valor: Int,
-    val estado_pagado: Boolean = false // false = pendiente, true = pagado
+
+    @ColumnInfo(name = "estado_pagado")
+    val estadoPagado: Boolean = false
 )
