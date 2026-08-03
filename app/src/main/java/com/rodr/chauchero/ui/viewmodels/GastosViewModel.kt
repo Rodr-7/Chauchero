@@ -49,7 +49,7 @@ class GastosViewModel(
                 categoria = categoria.trim(),
                 prioridad = prioridad,
                 valor = valor,
-                estadoPagado = false // Todo gasto nace por defecto en estado "pendiente" (CU-01)
+                estadoPagado = false
             )
             gastoRepository.insertarGasto(nuevoGasto)
         }
