@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface GastoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertarGasto(gasto: Gasto)
+    suspend fun insertarGasto(gasto: Gasto): Long
 
     @Query("SELECT * FROM gastos WHERE id_gasto = :idGasto")
     fun mostrarGasto(idGasto: Int): Flow<Gasto?>
@@ -20,8 +20,8 @@ interface GastoDao {
     fun mostrarTodosLosGastos(): Flow<List<Gasto>>
 
     @Update
-    suspend fun modificarGasto(gasto: Gasto)
+    suspend fun modificarGasto(gasto: Gasto): Int
 
     @Query("DELETE FROM gastos WHERE id_gasto = :idGasto")
-    suspend fun borrarGasto(idGasto: Int)
+    suspend fun borrarGasto(idGasto: Int): Int
 }

@@ -1,20 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.2.10-2.0.2"}
+    alias(libs.plugins.ksp)
+}
 
 android {
     namespace = "com.rodr.chauchero"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.rodr.chauchero"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -23,9 +21,7 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -62,4 +58,9 @@ dependencies {
 
     // Soporte opcional para Kotlin Extensions y Coroutines con Room
     implementation("androidx.room:room-ktx:$room_version")
+}
+
+// Configure Kotlin JVM toolchain
+kotlin {
+    jvmToolchain(11)
 }
