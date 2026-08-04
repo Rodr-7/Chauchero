@@ -27,7 +27,7 @@ Este proyecto fue construido aplicando rigurosos estándares de ingeniería de s
 
 ## 🗂️ Estructura del Proyecto
 
-El código fuente está estrictamente organizado en capas (Data, Domain/Model, Presentation):
+El código fuente está organizado según la estructura real del paquete `com.rodr.chauchero`, separando datos, modelos y presentación:
 
 ```
 com.rodr.chauchero
@@ -52,34 +52,119 @@ com.rodr.chauchero
 
 ## 🚀 Instalación y Ejecución
 
-### Requisitos
+### Requisitos generales
+
+Para clonar, abrir, sincronizar, compilar y ejecutar Chauchero desde Windows, Linux o macOS necesitas:
 
 - Android Studio estable compatible con Android Gradle Plugin 8.5.x.
 - JDK 17 configurado como **Gradle JDK** en Android Studio.
-- Android SDK instalado localmente.
+- Android SDK instalado localmente en cada computador.
 - SDK Platform Android 14, API 34.
 - Android SDK Build Tools instaladas desde Android Studio.
-- Emulador o dispositivo físico con Android 7.0, API 24, o superior.
-- Conexión a internet solo para la primera sincronización de dependencias Gradle.
+- Emulador Android o dispositivo físico con Android 7.0, API 24, o superior.
+- Conexión a internet durante la primera sincronización para descargar Gradle, plugins y dependencias.
+
+> No configures rutas absolutas personales dentro de archivos versionados del repositorio.
+
+---
+
+### Archivos que deben estar en Git
+
+Estos archivos sí deben permanecer versionados:
+
+```text
+settings.gradle.kts
+build.gradle.kts
+app/build.gradle.kts
+gradle.properties
+gradle/libs.versions.toml
+gradle/wrapper/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+app/src/main/AndroidManifest.xml
+README.md
+.gitignore
+```
+
+El Gradle Wrapper es obligatorio para que todos usen la misma versión de Gradle sin depender de una instalación global.
+
+---
+
+### Archivos que NO deben subirse a Git
+
+Estos archivos o carpetas deben ser locales de cada computador:
+
+```text
+local.properties
+.gradle/
+build/
+app/build/
+.idea/
+.kotlin/
+.cxx/
+captures/
+*.iml
+```
+
+Especialmente, `local.properties` no debe versionarse porque contiene la ruta local del Android SDK de cada persona.
+
+---
 
 ### Clonar el repositorio
 
+Usa la URL real del repositorio:
+
 ```bash
-git clone https://github.com/tu-usuario/chauchero.git
-cd chauchero
+git clone <URL_REAL_DEL_REPOSITORIO>
+cd Chauchero
 ```
+
+---
 
 ### Abrir en Android Studio
 
 1. Abre Android Studio.
-2. Selecciona **Open** y elige la carpeta raíz del repositorio.
-3. Ve a **File > Settings > Build, Execution, Deployment > Build Tools > Gradle** en Windows/Linux, o **Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle** en macOS.
-4. Configura **Gradle JDK** en JDK 17.
-5. Permite que Android Studio sincronice Gradle.
+2. Selecciona **Open**.
+3. Elige la carpeta raíz del repositorio, no la carpeta `app`.
+4. Espera a que Android Studio detecte el proyecto Gradle.
+5. Configura **Gradle JDK** en JDK 17:
+   - Windows/Linux: **File > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
+   - macOS: **Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
+6. Ejecuta **Sync Project with Gradle Files**.
+
+---
+
+### Configurar Android SDK
+
+Desde Android Studio abre **SDK Manager** e instala:
+
+- Android SDK Platform 34.
+- Android SDK Build Tools.
+- Android SDK Platform-Tools.
+- Android Emulator, si usarás emulador.
+- Un system image para crear un AVD, por ejemplo API 34.
+
+La aplicación tiene:
+
+```text
+compileSdk = 34
+targetSdk = 34
+minSdk = 24
+```
+
+Por lo tanto:
+
+- Para compilar necesitas SDK Platform 34.
+- Para ejecutar necesitas un emulador o dispositivo con API 24 o superior.
+
+---
 
 ### Configurar `local.properties`
 
-Android Studio normalmente genera este archivo automáticamente. Debe existir solo en cada computador y no debe subirse a Git.
+Android Studio normalmente genera `local.properties` automáticamente al abrir el proyecto.
+
+Si necesitas crearlo manualmente, debe quedar en la raíz del repositorio y contener solo la ruta local del Android SDK.
 
 Ejemplo en Windows:
 
@@ -98,6 +183,26 @@ Ejemplo en Linux:
 ```properties
 sdk.dir=/home/TU_USUARIO/Android/Sdk
 ```
+
+No subas este archivo a Git.
+
+---
+
+### Permisos de `gradlew` en Linux/macOS
+
+Si después de clonar el repositorio `gradlew` no tiene permisos de ejecución, ejecútalo una vez:
+
+```bash
+chmod +x gradlew
+```
+
+Después valida:
+
+```bash
+./gradlew --version
+```
+
+---
 
 ### Validar desde terminal
 
@@ -119,11 +224,16 @@ gradlew.bat lint
 gradlew.bat assembleDebug
 ```
 
+---
+
 ### Ejecutar la app
 
 1. Crea o selecciona un emulador Android con API 24 o superior.
 2. También puedes conectar un dispositivo físico con depuración USB habilitada.
-3. Ejecuta la configuración `app` desde Android Studio.
+3. Selecciona la configuración `app` en Android Studio.
+4. Presiona **Run**.
+
+La app funciona localmente y no requiere servicios web, Firebase, Retrofit ni conexión con bancos.
 
 ## 🗺️ Roadmap
 

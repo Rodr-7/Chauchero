@@ -12,7 +12,6 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 /.kotlin/
 /gradle/gradle-daemon-jvm.properties
 /.idea/
