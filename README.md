@@ -52,15 +52,78 @@ com.rodr.chauchero
 
 ## 🚀 Instalación y Ejecución
 
-1. Clona este repositorio en tu máquina local:
-    
-    ```bash
-    git clone https://github.com/tu-usuario/chauchero.git
-    ```
-    
-2. Abre el proyecto en **Android Studio**.
-3. Permite que Gradle sincronice las dependencias del proyecto (Room, Compose, Coroutines, etc.).
-4. Ejecuta la aplicación en un emulador o dispositivo físico Android (API Level requerido: [Insertar API Mínima, ej. 24+]).
+### Requisitos
+
+- Android Studio estable compatible con Android Gradle Plugin 8.5.x.
+- JDK 17 configurado como **Gradle JDK** en Android Studio.
+- Android SDK instalado localmente.
+- SDK Platform Android 14, API 34.
+- Android SDK Build Tools instaladas desde Android Studio.
+- Emulador o dispositivo físico con Android 7.0, API 24, o superior.
+- Conexión a internet solo para la primera sincronización de dependencias Gradle.
+
+### Clonar el repositorio
+
+```bash
+git clone https://github.com/tu-usuario/chauchero.git
+cd chauchero
+```
+
+### Abrir en Android Studio
+
+1. Abre Android Studio.
+2. Selecciona **Open** y elige la carpeta raíz del repositorio.
+3. Ve a **File > Settings > Build, Execution, Deployment > Build Tools > Gradle** en Windows/Linux, o **Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle** en macOS.
+4. Configura **Gradle JDK** en JDK 17.
+5. Permite que Android Studio sincronice Gradle.
+
+### Configurar `local.properties`
+
+Android Studio normalmente genera este archivo automáticamente. Debe existir solo en cada computador y no debe subirse a Git.
+
+Ejemplo en Windows:
+
+```properties
+sdk.dir=C\:\\Users\\TU_USUARIO\\AppData\\Local\\Android\\Sdk
+```
+
+Ejemplo en macOS:
+
+```properties
+sdk.dir=/Users/TU_USUARIO/Library/Android/sdk
+```
+
+Ejemplo en Linux:
+
+```properties
+sdk.dir=/home/TU_USUARIO/Android/Sdk
+```
+
+### Validar desde terminal
+
+Linux/macOS:
+
+```bash
+./gradlew --version
+./gradlew test
+./gradlew lint
+./gradlew assembleDebug
+```
+
+Windows:
+
+```bat
+gradlew.bat --version
+gradlew.bat test
+gradlew.bat lint
+gradlew.bat assembleDebug
+```
+
+### Ejecutar la app
+
+1. Crea o selecciona un emulador Android con API 24 o superior.
+2. También puedes conectar un dispositivo físico con depuración USB habilitada.
+3. Ejecuta la configuración `app` desde Android Studio.
 
 ## 🗺️ Roadmap
 
