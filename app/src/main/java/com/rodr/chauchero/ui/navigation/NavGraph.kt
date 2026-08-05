@@ -1,13 +1,26 @@
 package com.rodr.chauchero.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rodr.chauchero.data.repository.GastoRepository
 import com.rodr.chauchero.data.repository.PerfilUsuarioRepository
@@ -15,14 +28,11 @@ import com.rodr.chauchero.ui.screens.gastos.ListaGastosScreen
 import com.rodr.chauchero.ui.screens.gastos.NuevoGastoScreen
 import com.rodr.chauchero.ui.screens.onboarding.OnboardingScreen
 import com.rodr.chauchero.ui.screens.presupuesto.PresupuestoScreen
+import com.rodr.chauchero.ui.theme.ChaucheroMintNavigation
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
 import com.rodr.chauchero.ui.viewmodels.OnboardingViewModel
 import com.rodr.chauchero.ui.viewmodels.PresupuestoViewModel
 
-/**
- * Grafo central de navegación (NavHost) que conecta las pantallas con sus respectivos ViewModels
- * utilizando fábricas personalizadas para la inyección de los repositorios.
- */
 @Composable
 fun ChaucheroNavGraph(
     gastoRepository: GastoRepository,
@@ -31,82 +41,123 @@ fun ChaucheroNavGraph(
     navController: NavHostController = rememberNavController(),
     startDestination: String = Screen.Onboarding.route
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        modifier = modifier
-    ) {
-        // 1. Ruta de Onboarding (CU-06)
-        composable(Screen.Onboarding.route) {
-            val viewModel: OnboardingViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return OnboardingViewModel(perfilRepository) as T
-                    }
-                }
-            )
-            OnboardingScreen(
-                viewModel = viewModel,
-                onNavigateToDashboard = {
-                    navController.navigate(Screen.Dashboard.route) {
-                        popUpTo(Screen.Onboarding.route) { inclusive = true }
-                    }
-                }
-            )
-        }
+    val bottomDestinations = listOf(
+        MainDestination(Screen.Dashboard.route, "Presupuesto", "P"),
+        MainDestination(Screen.ListaGastos.route, "Gastos", "G"),
+        MainDestination(Screen.Ajustes.route, "Ajustes", "A")
+    )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = currentDestination?.hierarchy?.any { destination ->
+        bottomDestinations.any { it.route == destination.route }
+    } == true
 
-        // 2. Ruta del Dashboard / Resumen Financiero (CU-05)
-        composable(Screen.Dashboard.route) {
-            val viewModel: PresupuestoViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return PresupuestoViewModel(gastoRepository, perfilRepository) as T
+    Scaffold(
+        modifier = modifier,
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar(containerColor = ChaucheroMintNavigation) {
+                    bottomDestinations.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
+                            onClick = {
+                                navController.navigate(destination.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Text(destination.iconText, style = MaterialTheme.typography.titleLarge) },
+                            label = { Text(destination.label) }
+                        )
                     }
                 }
-            )
-            PresupuestoScreen(
-                viewModel = viewModel,
-                onNavigateToGastos = {
-                    navController.navigate(Screen.ListaGastos.route)
-                }
-            )
+            }
         }
-
-        // 3. Ruta del Historial de Gastos (CU-01 / CU-02)
-        composable(Screen.ListaGastos.route) {
-            val viewModel: GastosViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return GastosViewModel(gastoRepository) as T
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Screen.Onboarding.route) {
+                val viewModel: OnboardingViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return OnboardingViewModel(perfilRepository) as T
+                        }
                     }
-                }
-            )
-            ListaGastosScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToNuevoGasto = {
-                    navController.navigate(Screen.NuevoGasto.route)
-                }
-            )
-        }
-
-        // 4. Ruta del Formulario de Nuevo Gasto (CU-01)
-        composable(Screen.NuevoGasto.route) {
-            val viewModel: GastosViewModel = viewModel(
-                factory = object : ViewModelProvider.Factory {
-                    @Suppress("UNCHECKED_CAST")
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return GastosViewModel(gastoRepository) as T
+                )
+                OnboardingScreen(
+                    viewModel = viewModel,
+                    onNavigateToDashboard = {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
                     }
+                )
+            }
+
+            composable(Screen.Dashboard.route) {
+                val viewModel: PresupuestoViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return PresupuestoViewModel(gastoRepository, perfilRepository) as T
+                        }
+                    }
+                )
+                PresupuestoScreen(viewModel = viewModel)
+            }
+
+            composable(Screen.ListaGastos.route) {
+                val viewModel: GastosViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return GastosViewModel(gastoRepository) as T
+                        }
+                    }
+                )
+                ListaGastosScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.navigate(Screen.Dashboard.route) },
+                    onNavigateToNuevoGasto = { navController.navigate(Screen.NuevoGasto.route) }
+                )
+            }
+
+            composable(Screen.NuevoGasto.route) {
+                val viewModel: GastosViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return GastosViewModel(gastoRepository) as T
+                        }
+                    }
+                )
+                NuevoGastoScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Ajustes.route) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Ajustes")
                 }
-            )
-            NuevoGastoScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
-            )
+            }
         }
     }
 }
+
+private data class MainDestination(
+    val route: String,
+    val label: String,
+    val iconText: String
+)

@@ -1,6 +1,7 @@
 package com.rodr.chauchero
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import com.rodr.chauchero.ui.theme.ChaucheroTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         // Instanciación de la base de datos bajo el patrón Singleton
         val (gastoRepository, perfilRepository) = try {
