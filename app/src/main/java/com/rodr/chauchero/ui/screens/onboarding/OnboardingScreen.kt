@@ -5,7 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,38 +50,38 @@ import com.rodr.chauchero.ui.viewmodels.OnboardingViewModel
 private data class IntroPage(
     val title: String,
     val body: String,
-    @DrawableRes val image: Int
+    @get:DrawableRes val image: Int,
 )
 
 private val introPages = listOf(
     IntroPage(
         title = "¡Bienvenido!",
         body = "Chauchero te ayudará a controlar tus gastos y saber cuánto dinero tienes para usar libremente sin salirte de tu presupuesto.",
-        image = R.drawable.onboarding_screen_1
+        image = R.drawable.onboarding_screen_1,
     ),
     IntroPage(
         title = "Contrasta tus gastos y tu presupuesto",
         body = "Anota tus gastos mensuales, establece tu presupuesto mensual y Chauchero hará el resto. Podrás ver cuánto quedará disponible para usar libremente.",
-        image = R.drawable.onboarding_image_2
+        image = R.drawable.onboarding_image_2,
     ),
     IntroPage(
         title = "Lleva las cuentas del día a día",
         body = "Marca con un toque los gastos que ya pagaste y actualiza tu saldo para saber cuánto dinero te queda libre.",
-        image = R.drawable.onboarding_image_3
-    )
+        image = R.drawable.onboarding_image_3,
+    ),
 )
 
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    onNavigateToDashboard: () -> Unit
+    onNavigateToDashboard: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     OnboardingContent(
         uiState = uiState,
         onNombreChange = viewModel::actualizarNombre,
         onSalarioChange = viewModel::actualizarSalarioFijo,
-        onComenzar = { viewModel.guardarPerfilInicial(onNavigateToDashboard) }
+        onComenzar = { viewModel.guardarPerfilInicial(onNavigateToDashboard) },
     )
 }
 
@@ -91,7 +91,7 @@ fun OnboardingContent(
     onNombreChange: (String) -> Unit,
     onSalarioChange: (String) -> Unit,
     onComenzar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var page by rememberSaveable { mutableIntStateOf(0) }
 
@@ -102,63 +102,63 @@ fun OnboardingContent(
             .statusBarsPadding()
             .imePadding()
             .padding(horizontal = 28.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (page < introPages.size) {
             IntroPageContent(page = introPages[page])
             PrimaryAction(
                 label = if (page == 0) "¡Vamos!" else "Siguiente",
-                onClick = { page += 1 }
+                onClick = { page += 1 },
             )
         } else {
             ProfileForm(
                 uiState = uiState,
                 onNombreChange = onNombreChange,
                 onSalarioChange = onSalarioChange,
-                onComenzar = onComenzar
+                onComenzar = onComenzar,
             )
         }
     }
 }
 
 @Composable
-private fun IntroPageContent(page: IntroPage) {
+private fun ColumnScope.IntroPageContent(page: IntroPage) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .weight(1f, fill = true)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
             painter = painterResource(page.image),
             contentDescription = null,
             modifier = Modifier.size(270.dp),
-            contentScale = ContentScale.Fit
+            contentScale = ContentScale.Fit,
         )
         Spacer(Modifier.height(24.dp))
         Text(
             text = page.title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(18.dp))
         Text(
             text = page.body,
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
 
 @Composable
-private fun ProfileForm(
+private fun ColumnScope.ProfileForm(
     uiState: OnboardingUiState,
     onNombreChange: (String) -> Unit,
     onSalarioChange: (String) -> Unit,
-    onComenzar: () -> Unit
+    onComenzar: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -166,7 +166,7 @@ private fun ProfileForm(
             .weight(1f, fill = true)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Antes de empezar", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(48.dp))
@@ -180,7 +180,7 @@ private fun ProfileForm(
                 { Text("Ingresa un nombre válido") }
             } else null,
             isError = uiState.nombrePerfil.isNotEmpty() && !uiState.nombreValido,
-            singleLine = true
+            singleLine = true,
         )
         Spacer(Modifier.height(24.dp))
         OutlinedTextField(
@@ -197,7 +197,7 @@ private fun ProfileForm(
             },
             isError = !uiState.salarioValido,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true
+            singleLine = true,
         )
         uiState.errorMessage?.let {
             Spacer(Modifier.height(12.dp))
@@ -208,7 +208,7 @@ private fun ProfileForm(
         label = "¡Comenzar!",
         onClick = onComenzar,
         enabled = uiState.puedeComenzar,
-        loading = uiState.isLoading
+        loading = uiState.isLoading,
     )
 }
 
@@ -217,7 +217,7 @@ private fun PrimaryAction(
     label: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    loading: Boolean = false
+    loading: Boolean = false,
 ) {
     Spacer(Modifier.height(28.dp))
     Button(
@@ -227,7 +227,7 @@ private fun PrimaryAction(
             .fillMaxWidth()
             .height(58.dp),
         shape = RoundedCornerShape(22.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = ChaucheroGreen)
+        colors = ButtonDefaults.buttonColors(containerColor = ChaucheroGreen),
     ) {
         if (loading) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
