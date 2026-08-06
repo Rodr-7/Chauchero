@@ -72,6 +72,8 @@ class MainActivity : ComponentActivity() {
                 override fun mostrarPerfil(idPerfil: Int): Flow<com.rodr.chauchero.model.PerfilUsuario?> =
                     perfilState.map { p -> if (p?.idPerfil == idPerfil) p else null }
 
+                override fun observarPrimerPerfil(): Flow<com.rodr.chauchero.model.PerfilUsuario?> = perfilState
+
                 override suspend fun modificarPerfil(perfil: com.rodr.chauchero.model.PerfilUsuario): Int {
                     perfilState.value = perfil
                     return 1

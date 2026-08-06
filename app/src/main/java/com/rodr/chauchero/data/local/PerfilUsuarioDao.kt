@@ -16,6 +16,9 @@ interface PerfilUsuarioDao {
     @Query("SELECT * FROM perfil_usuario WHERE id_perfil = :idPerfil")
     fun mostrarPerfil(idPerfil: Int): Flow<PerfilUsuario?>
 
+    @Query("SELECT * FROM perfil_usuario ORDER BY id_perfil ASC LIMIT 1")
+    fun observarPrimerPerfil(): Flow<PerfilUsuario?>
+
     @Update
     suspend fun modificarPerfil(perfil: PerfilUsuario): Int
 

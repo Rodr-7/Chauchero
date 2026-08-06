@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.Flow
  */
 class PerfilUsuarioRepository(private val perfilUsuarioDao: PerfilUsuarioDao) {
 
+    fun observarPerfilLocal(): Flow<PerfilUsuario?> = perfilUsuarioDao.observarPrimerPerfil()
+
     // Obtiene el perfil de manera reactiva en tiempo real por su ID
     fun obtenerPerfilPorId(idPerfil: Int): Flow<PerfilUsuario?> {
         return perfilUsuarioDao.mostrarPerfil(idPerfil)

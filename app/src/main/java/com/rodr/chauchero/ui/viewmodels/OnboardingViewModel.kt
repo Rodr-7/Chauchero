@@ -16,10 +16,19 @@ import kotlinx.coroutines.launch
 data class OnboardingUiState(
     val nombrePerfil: String = "",
     val salarioFijoStr: String = "",
-    val saldoActualStr: String = "",
     val isLoading: Boolean = false,
-    val isCompleted: Boolean = false
-)
+    val isCompleted: Boolean = false,
+    val errorMessage: String? = null
+) {
+    val nombreValido: Boolean get() = nombrePerfil.trim().isNotEmpty()
+    val salarioValido: Boolean get() = salarioFijoStr.isEmpty() || salarioFijoStr.toIntOrNull() != null
+    val puedeComenzar: Boolean get() = nombreValido && salarioValido && !isLoading
+}
+
+private const val MAX_MONTO_DIGITS = 10
+
+internal fun normalizarMontoInput(value: String): String =
+    value.filter(Char::isDigit).take(MAX_MONTO_DIGITS)
 
 /**
  * ViewModel encargado de procesar la creación del perfil inicial del usuario
@@ -33,15 +42,11 @@ class OnboardingViewModel(
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
     fun actualizarNombre(nombre: String) {
-        _uiState.update { it.copy(nombrePerfil = nombre) }
+        _uiState.update { it.copy(nombrePerfil = nombre, errorMessage = null) }
     }
 
     fun actualizarSalarioFijo(salario: String) {
-        _uiState.update { it.copy(salarioFijoStr = salario) }
-    }
-
-    fun actualizarSaldoActual(saldo: String) {
-        _uiState.update { it.copy(saldoActualStr = saldo) }
+        _uiState.update { it.copy(salarioFijoStr = normalizarMontoInput(salario), errorMessage = null) }
     }
 
     /**
@@ -53,11 +58,10 @@ class OnboardingViewModel(
         val nombreLimpio = currentState.nombrePerfil.trim()
 
         // Validación estricta según TC-07 (evita nombres vacíos o de puros espacios)
-        if (nombreLimpio.isEmpty()) return
+        if (!currentState.puedeComenzar) return
 
         // Conversión segura de enteros con manejo de nulos/vacíos (TC-01 / TC-08)
-        val salarioFijo = currentState.salarioFijoStr.trim().toIntOrNull() ?: 0
-        val saldoActual = currentState.saldoActualStr.trim().toIntOrNull() ?: 0
+        val salarioFijo = currentState.salarioFijoStr.toIntOrNull() ?: 0
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -65,13 +69,18 @@ class OnboardingViewModel(
             val nuevoPerfil = PerfilUsuario(
                 nombrePerfil = nombreLimpio,
                 salarioFijo = salarioFijo,
-                saldoActual = saldoActual
+                saldoActual = 0
             )
-
-            perfilRepository.insertarPerfil(nuevoPerfil)
-
-            _uiState.update { it.copy(isLoading = false, isCompleted = true) }
-            onSuccess()
+            runCatching { perfilRepository.insertarPerfil(nuevoPerfil) }
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isCompleted = true) }
+                    onSuccess()
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = "No pudimos crear tu perfil. Inténtalo nuevamente.")
+                    }
+                }
         }
     }
 }

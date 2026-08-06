@@ -9,6 +9,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,12 @@ import com.rodr.chauchero.ui.theme.ChaucheroMintNavigation
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
 import com.rodr.chauchero.ui.viewmodels.OnboardingViewModel
 import com.rodr.chauchero.ui.viewmodels.PresupuestoViewModel
+import kotlinx.coroutines.flow.map
+
+private sealed interface ProfileStatus {
+    data object Loading : ProfileStatus
+    data class Ready(val exists: Boolean) : ProfileStatus
+}
 
 @Composable
 fun ChaucheroNavGraph(
@@ -39,8 +46,25 @@ fun ChaucheroNavGraph(
     perfilRepository: PerfilUsuarioRepository,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screen.Onboarding.route
+    startDestination: String? = null
 ) {
+    val profileStatus by perfilRepository.observarPerfilLocal()
+        .map { ProfileStatus.Ready(it != null) as ProfileStatus }
+        .collectAsState(initial = ProfileStatus.Loading)
+
+    if (profileStatus is ProfileStatus.Loading && startDestination == null) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            androidx.compose.material3.CircularProgressIndicator()
+        }
+        return
+    }
+
+    val hasProfile = (profileStatus as? ProfileStatus.Ready)?.exists == true
+    val destination = startDestination ?: if (!hasProfile) {
+        Screen.Onboarding.route
+    } else {
+        Screen.Dashboard.route
+    }
     val bottomDestinations = listOf(
         MainDestination(Screen.Dashboard.route, "Presupuesto", "P"),
         MainDestination(Screen.ListaGastos.route, "Gastos", "G"),
@@ -79,7 +103,7 @@ fun ChaucheroNavGraph(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = startDestination,
+            startDestination = destination,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Onboarding.route) {
