@@ -3,6 +3,11 @@ package com.rodr.chauchero.ui.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -11,8 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,7 +36,6 @@ import com.rodr.chauchero.ui.screens.gastos.ListaGastosScreen
 import com.rodr.chauchero.ui.screens.gastos.NuevoGastoScreen
 import com.rodr.chauchero.ui.screens.onboarding.OnboardingScreen
 import com.rodr.chauchero.ui.screens.presupuesto.PresupuestoScreen
-import com.rodr.chauchero.ui.theme.ChaucheroMintNavigation
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
 import com.rodr.chauchero.ui.viewmodels.OnboardingViewModel
 import com.rodr.chauchero.ui.viewmodels.PresupuestoViewModel
@@ -46,13 +52,14 @@ fun ChaucheroNavGraph(
     perfilRepository: PerfilUsuarioRepository,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String? = null
+    startDestination: String? = null,
 ) {
-    val profileStatus by perfilRepository.observarPerfilLocal()
-        .map { ProfileStatus.Ready(it != null) as ProfileStatus }
-        .collectAsState(initial = ProfileStatus.Loading)
+    val profileStatus by remember(perfilRepository) {
+        perfilRepository.observarPerfilLocal()
+            .map { ProfileStatus.Ready(it != null) as ProfileStatus }
+    }.collectAsState(initial = ProfileStatus.Loading)
 
-    if (profileStatus is ProfileStatus.Loading && startDestination == null) {
+    if ((profileStatus is ProfileStatus.Loading) && (startDestination == null)) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             androidx.compose.material3.CircularProgressIndicator()
         }
@@ -66,9 +73,9 @@ fun ChaucheroNavGraph(
         Screen.Dashboard.route
     }
     val bottomDestinations = listOf(
-        MainDestination(Screen.Dashboard.route, "Presupuesto", "P"),
-        MainDestination(Screen.ListaGastos.route, "Gastos", "G"),
-        MainDestination(Screen.Ajustes.route, "Ajustes", "A")
+        MainDestination(Screen.Dashboard.route, "Presupuesto", Icons.Default.Home),
+        MainDestination(Screen.ListaGastos.route, "Gastos", Icons.AutoMirrored.Filled.List),
+        MainDestination(Screen.Ajustes.route, "Ajustes", Icons.Default.Settings)
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -80,10 +87,11 @@ fun ChaucheroNavGraph(
         modifier = modifier,
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(containerColor = ChaucheroMintNavigation) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.secondaryContainer) {
                     bottomDestinations.forEach { destination ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
                         NavigationBarItem(
-                            selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
+                            selected = selected,
                             onClick = {
                                 navController.navigate(destination.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -93,8 +101,20 @@ fun ChaucheroNavGraph(
                                     restoreState = true
                                 }
                             },
-                            icon = { Text(destination.iconText, style = MaterialTheme.typography.titleLarge) },
-                            label = { Text(destination.label) }
+                            icon = {
+                                Icon(
+                                    imageVector = destination.icon,
+                                    contentDescription = null
+                                )
+                            },
+                            label = { Text(destination.label) },
+                            colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }
@@ -116,13 +136,12 @@ fun ChaucheroNavGraph(
                     }
                 )
                 OnboardingScreen(
-                    viewModel = viewModel,
-                    onNavigateToDashboard = {
-                        navController.navigate(Screen.Dashboard.route) {
-                            popUpTo(Screen.Onboarding.route) { inclusive = true }
-                        }
+                    viewModel = viewModel
+                ) {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
-                )
+                }
             }
 
             composable(Screen.Dashboard.route) {
@@ -183,5 +202,5 @@ fun ChaucheroNavGraph(
 private data class MainDestination(
     val route: String,
     val label: String,
-    val iconText: String
+    val icon: ImageVector
 )

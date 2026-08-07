@@ -2,6 +2,8 @@ package com.rodr.chauchero.ui.screens.gastos
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -43,7 +45,10 @@ fun NuevoGastoScreen(
                 title = { Text("Registrar Nuevo Gasto") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Text("⬅️")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
                     }
                 }
             )

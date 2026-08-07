@@ -3,6 +3,10 @@ package com.rodr.chauchero.ui.screens.gastos
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,14 +36,20 @@ fun ListaGastosScreen(
                 title = { Text("Gestión de Gastos Fijos") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Text("⬅️")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToNuevoGasto) {
-                Text("➕")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Añadir gasto"
+                )
             }
         }
     ) { innerPadding ->
@@ -124,7 +134,11 @@ fun GastoItemCard(
 
             // Botón de eliminación rápida
             IconButton(onClick = onDelete) {
-                Text("🗑️")
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar gasto",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }

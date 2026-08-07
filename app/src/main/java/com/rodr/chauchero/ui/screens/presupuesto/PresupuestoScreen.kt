@@ -16,12 +16,16 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -43,10 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.rodr.chauchero.ui.theme.ChaucheroCard
 import com.rodr.chauchero.ui.theme.ChaucheroGreen
-import com.rodr.chauchero.ui.theme.ChaucheroGreenContainer
-import com.rodr.chauchero.ui.theme.ChaucheroMetricCard
 import com.rodr.chauchero.ui.theme.ChaucheroTheme
 import com.rodr.chauchero.ui.theme.ChaucheroWarning
 import com.rodr.chauchero.ui.viewmodels.PresupuestoUiState
@@ -84,16 +85,18 @@ fun PresupuestoContent(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 8.dp,
+                    bottom = 100.dp // Espacio para el botón fijo
+                )
             ) {
                 item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = "Chauchero de ${uiState.nombrePerfil}",
@@ -120,25 +123,24 @@ fun PresupuestoContent(
                         onActualizarPresupuesto = { showBudgetDialog = true }
                     )
                 }
+            }
 
-                item {
-                    Spacer(modifier = Modifier.height(26.dp))
-                    Button(
-                        onClick = { showBalanceDialog = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 74.dp)
-                            .height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = ChaucheroGreen)
-                    ) {
-                        Text(
-                            text = "Actualizar\nSaldo",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+            // Botón fijo en la parte inferior
+            Button(
+                onClick = { showBalanceDialog = true },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 48.dp, vertical = 24.dp)
+                    .height(58.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ChaucheroGreen)
+            ) {
+                Text(
+                    text = "Actualizar Saldo",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -174,7 +176,7 @@ fun PresupuestoContent(
 private fun ResumenFinancieroCard(uiState: PresupuestoUiState) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(containerColor = ChaucheroCard),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
@@ -184,7 +186,7 @@ private fun ResumenFinancieroCard(uiState: PresupuestoUiState) {
             val libreColor = if (uiState.libreMensualAproximado >= 0) ChaucheroGreen else ChaucheroWarning
             Column(
                 modifier = Modifier
-                    .background(ChaucheroGreenContainer, RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(10.dp))
                     .padding(horizontal = 22.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -230,16 +232,16 @@ private fun ProyeccionGastosCard(
                 onClick = onExpandedChange,
                 modifier = Modifier.semantics { contentDescription = "Expandir o contraer proyección de gastos" }
             ) {
-                Text(
-                    text = if (expanded) "⌄" else "›",
-                    style = MaterialTheme.typography.headlineSmall
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowDown else Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null
                 )
             }
         }
         AnimatedVisibility(visible = expanded) {
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.elevatedCardColors(containerColor = ChaucheroCard),
+                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Column(
@@ -273,7 +275,7 @@ private fun ProyeccionGastosCard(
                         }
                         Column(
                             modifier = Modifier
-                                .background(ChaucheroMetricCard, RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))
                                 .padding(12.dp),
                             horizontalAlignment = Alignment.End
                         ) {
@@ -368,7 +370,7 @@ private fun formatPesos(value: Int): String {
 @Preview(showBackground = true)
 @Composable
 private fun PresupuestoContentPreview() {
-    ChaucheroTheme(dynamicColor = false) {
+    ChaucheroTheme {
         PresupuestoContent(
             uiState = PresupuestoUiState(
                 nombrePerfil = "Perfil1",
