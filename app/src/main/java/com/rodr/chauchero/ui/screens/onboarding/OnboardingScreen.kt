@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,8 +39,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rodr.chauchero.R
-import com.rodr.chauchero.ui.theme.ChaucheroGreen
-import com.rodr.chauchero.ui.theme.ChaucheroMintNavigation
 import com.rodr.chauchero.ui.theme.ChaucheroTheme
 import com.rodr.chauchero.ui.viewmodels.OnboardingUiState
 import com.rodr.chauchero.ui.viewmodels.OnboardingViewModel
@@ -98,7 +94,7 @@ fun OnboardingContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(ChaucheroMintNavigation)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .imePadding()
             .padding(horizontal = 28.dp, vertical = 24.dp),
@@ -143,12 +139,14 @@ private fun ColumnScope.IntroPageContent(page: IntroPage) {
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(Modifier.height(18.dp))
         Text(
             text = page.body,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground,
         )
     }
 }
@@ -168,7 +166,12 @@ private fun ColumnScope.ProfileForm(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Antes de empezar", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        Text(
+            "Antes de empezar",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(Modifier.height(48.dp))
         OutlinedTextField(
             value = uiState.nombrePerfil,
@@ -227,10 +230,12 @@ private fun PrimaryAction(
             .fillMaxWidth()
             .height(58.dp),
         shape = RoundedCornerShape(22.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = ChaucheroGreen),
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
         } else {
             Text(label, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rodr.chauchero.model.Gasto
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
+import com.rodr.chauchero.ui.viewmodels.OrdenGastos
 
 /**
  * Pantalla de Listado e Historial de Gastos (CU-01 / CU-02).
@@ -27,14 +29,38 @@ fun ListaGastosScreen(
     onNavigateToNuevoGasto: () -> Unit
 ) {
     val listaGastos by viewModel.todosLosGastos.collectAsState()
+    val ordenSeleccionado by viewModel.ordenSeleccionado.collectAsState()
+    var menuOrdenAbierto by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToNuevoGasto) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Añadir gasto"
-                )
+            Column(horizontalAlignment = Alignment.End) {
+                Box {
+                    SmallFloatingActionButton(onClick = { menuOrdenAbierto = true }) {
+                        Icon(Icons.Default.Sort, contentDescription = "Ordenar gastos")
+                    }
+                    DropdownMenu(
+                        expanded = menuOrdenAbierto,
+                        onDismissRequest = { menuOrdenAbierto = false }
+                    ) {
+                        OrdenGastos.entries.forEach { orden ->
+                            DropdownMenuItem(
+                                text = { Text(orden.etiqueta) },
+                                onClick = {
+                                    viewModel.seleccionarOrden(orden)
+                                    menuOrdenAbierto = false
+                                },
+                                leadingIcon = {
+                                    RadioButton(selected = orden == ordenSeleccionado, onClick = null)
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                FloatingActionButton(onClick = onNavigateToNuevoGasto) {
+                    Icon(Icons.Default.Add, contentDescription = "Añadir gasto")
+                }
             }
         }
     ) { innerPadding ->

@@ -69,6 +69,7 @@ fun PresupuestoScreen(
         uiState = uiState,
         onActualizarPresupuesto = viewModel::actualizarSalario,
         onActualizarSaldo = viewModel::actualizarSaldo,
+        onAlternarProyeccion = viewModel::alternarProyeccionExpandida,
         modifier = modifier
     )
 }
@@ -78,9 +79,9 @@ fun PresupuestoContent(
     uiState: PresupuestoUiState,
     onActualizarPresupuesto: (Int) -> Unit,
     onActualizarSaldo: (Int) -> Unit,
+    onAlternarProyeccion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var projectionExpanded by remember { mutableStateOf(true) }
     var showBudgetDialog by remember { mutableStateOf(false) }
     var showBalanceDialog by remember { mutableStateOf(false) }
 
@@ -122,8 +123,8 @@ fun PresupuestoContent(
                 item {
                     ProyeccionGastosCard(
                         uiState = uiState,
-                        expanded = projectionExpanded,
-                        onExpandedChange = { projectionExpanded = !projectionExpanded },
+                        expanded = uiState.proyeccionExpandida,
+                        onExpandedChange = onAlternarProyeccion,
                         onActualizarPresupuesto = { showBudgetDialog = true }
                     )
                 }
@@ -395,7 +396,8 @@ private fun PresupuestoContentPreview() {
                 isLoading = false
             ),
             onActualizarPresupuesto = {},
-            onActualizarSaldo = {}
+            onActualizarSaldo = {},
+            onAlternarProyeccion = {}
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.rodr.chauchero.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.rodr.chauchero.data.repository.GastoRepository
 import com.rodr.chauchero.data.repository.PerfilUsuarioRepository
@@ -26,7 +27,8 @@ data class PresupuestoUiState(
     val porPagar: Int = 0,
     val libreMensualAproximado: Int = 0,
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val proyeccionExpandida: Boolean = true
 )
 
 /**
@@ -36,13 +38,17 @@ data class PresupuestoUiState(
 class PresupuestoViewModel(
     private val gastoRepository: GastoRepository,
     private val perfilRepository: PerfilUsuarioRepository,
-    private val idPerfil: Int = 1 // ID por defecto para el MVP 1.0.0 (Mono-perfil)
+    private val idPerfil: Int = 1, // ID por defecto para el MVP 1.0.0 (Mono-perfil)
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
+
+    private val proyeccionExpandida = savedStateHandle.getStateFlow(PROYECCION_EXPANDIDA_KEY, true)
 
     val uiState: StateFlow<PresupuestoUiState> = combine(
         perfilRepository.obtenerPerfilPorId(idPerfil),
-        gastoRepository.todosLosGastos
-    ) { perfil: PerfilUsuario?, gastos: List<Gasto> ->
+        gastoRepository.todosLosGastos,
+        proyeccionExpandida
+    ) { perfil: PerfilUsuario?, gastos: List<Gasto>, expandida: Boolean ->
         val salarioFijo = perfil?.salarioFijo ?: 0
         val saldoActual = perfil?.saldoActual ?: 0
         val nombrePerfil = perfil?.nombrePerfil ?: "Mi Cuenta"
@@ -59,13 +65,18 @@ class PresupuestoViewModel(
             totalLibreMensual = totalLibreMensual,
             porPagar = porPagar,
             libreMensualAproximado = libreMensualAproximado,
-            isLoading = false
+            isLoading = false,
+            proyeccionExpandida = expandida
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = PresupuestoUiState()
     )
+
+    fun alternarProyeccionExpandida() {
+        savedStateHandle[PROYECCION_EXPANDIDA_KEY] = !proyeccionExpandida.value
+    }
 
     fun actualizarSalario(nuevoSalario: Int) {
         actualizarPerfil(nuevoSalario = nuevoSalario, nuevoSaldo = uiState.value.saldoActual)
@@ -85,5 +96,9 @@ class PresupuestoViewModel(
             )
             perfilRepository.modificarPerfil(perfilActualizado)
         }
+    }
+
+    private companion object {
+        const val PROYECCION_EXPANDIDA_KEY = "proyeccion_expandida"
     }
 }

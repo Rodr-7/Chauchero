@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -144,12 +146,20 @@ fun ChaucheroNavGraph(
                 }
             }
 
-            composable(Screen.Dashboard.route) {
+            composable(Screen.Dashboard.route) { backStackEntry ->
                 val viewModel: PresupuestoViewModel = viewModel(
-                    factory = object : ViewModelProvider.Factory {
+                    factory = object : AbstractSavedStateViewModelFactory(backStackEntry, null) {
                         @Suppress("UNCHECKED_CAST")
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return PresupuestoViewModel(gastoRepository, perfilRepository) as T
+                        override fun <T : ViewModel> create(
+                            key: String,
+                            modelClass: Class<T>,
+                            handle: SavedStateHandle
+                        ): T {
+                            return PresupuestoViewModel(
+                                gastoRepository,
+                                perfilRepository,
+                                savedStateHandle = handle
+                            ) as T
                         }
                     }
                 )
