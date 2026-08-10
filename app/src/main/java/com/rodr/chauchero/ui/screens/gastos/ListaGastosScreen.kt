@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -12,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rodr.chauchero.model.Gasto
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
@@ -21,29 +21,14 @@ import com.rodr.chauchero.ui.viewmodels.GastosViewModel
  * Permite visualizar los gastos registrados, alternar su estado de pago mediante checkboxes (CU-02),
  * y activar los recálculos automáticos de deuda en segundo plano (RF-03).
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaGastosScreen(
     viewModel: GastosViewModel,
-    onNavigateBack: () -> Unit,
     onNavigateToNuevoGasto: () -> Unit
 ) {
     val listaGastos by viewModel.todosLosGastos.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Gestión de Gastos Fijos") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                }
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToNuevoGasto) {
                 Icon(
@@ -53,29 +38,41 @@ fun ListaGastosScreen(
             }
         }
     ) { innerPadding ->
-        if (listaGastos.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No hay gastos registrados aún. ¡Añade uno!")
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(listaGastos, key = { it.idGasto }) { gasto ->
-                    GastoItemCard(
-                        gasto = gasto,
-                        onTogglePagado = { viewModel.alternarEstadoPago(gasto) },
-                        onDelete = { viewModel.borrarGasto(gasto.idGasto) }
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .statusBarsPadding()
+        ) {
+            Text(
+                text = "Lista de Gastos",
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+
+            if (listaGastos.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No hay gastos registrados aún. ¡Añade uno!")
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(listaGastos, key = { it.idGasto }) { gasto ->
+                        GastoItemCard(
+                            gasto = gasto,
+                            onTogglePagado = { viewModel.alternarEstadoPago(gasto) },
+                            onDelete = { viewModel.borrarGasto(gasto.idGasto) }
+                        )
+                    }
                 }
             }
         }

@@ -167,7 +167,6 @@ fun ChaucheroNavGraph(
                 )
                 ListaGastosScreen(
                     viewModel = viewModel,
-                    onNavigateBack = { navController.navigate(Screen.Dashboard.route) },
                     onNavigateToNuevoGasto = { navController.navigate(Screen.NuevoGasto.route) }
                 )
             }

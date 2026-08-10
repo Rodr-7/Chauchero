@@ -3,10 +3,13 @@ package com.rodr.chauchero.ui.screens.gastos
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.rodr.chauchero.model.Prioridad
@@ -27,6 +30,8 @@ fun NuevoGastoScreen(
     var categoria by remember { mutableStateOf("") }
     var valorStr by remember { mutableStateOf("") }
     var prioridadSeleccionada by remember { mutableStateOf(Prioridad.MEDIO) }
+    val nombreFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Estado para controlar el menú desplegable (Dropdown) de Prioridades
     var expandedPrioridad by remember { mutableStateOf(false) }
@@ -39,28 +44,28 @@ fun NuevoGastoScreen(
 
     val isFormValid = isNombreValid && isCategoriaValid && isValorValid
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Registrar Nuevo Gasto") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
+    LaunchedEffect(Unit) {
+        nombreFocusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Text(
+                text = "Lista de Gastos > Registrar Nuevo Gasto",
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+
             // Campo Nombre del Gasto
             OutlinedTextField(
                 value = nombreGasto,
@@ -68,7 +73,9 @@ fun NuevoGastoScreen(
                 label = { Text("Nombre del gasto *") },
                 singleLine = true,
                 isError = nombreGasto.isNotEmpty() && !isNombreValid,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(nombreFocusRequester)
             )
 
             // Campo Categoría
