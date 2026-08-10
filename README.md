@@ -1,3 +1,4 @@
+![Brand Image](/assets/brand_image.png)
 # Chauchero 🐷💰
 
 **App de Presupuesto Personal y Seguimiento de Gastos para Android**
