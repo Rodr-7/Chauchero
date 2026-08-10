@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -85,7 +84,7 @@ fun PresupuestoContent(
     var showBudgetDialog by remember { mutableStateOf(false) }
     var showBalanceDialog by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize().statusBarsPadding()) {
+    Box(modifier = modifier.fillMaxSize()) {
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else {
@@ -95,7 +94,7 @@ fun PresupuestoContent(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
                     start = 24.dp,
                     end = 24.dp,
-                    top = 8.dp,
+                    top = 0.dp,
                     bottom = 100.dp // Espacio para el botón fijo
                 )
             ) {

@@ -33,6 +33,7 @@ fun ListaGastosScreen(
     var menuOrdenAbierto by remember { mutableStateOf(false) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
                 Box {
@@ -68,11 +69,10 @@ fun ListaGastosScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .statusBarsPadding()
         ) {
             Text(
                 text = "Lista de Gastos",
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 8.dp),
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 0.dp),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold
             )

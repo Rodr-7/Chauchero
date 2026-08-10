@@ -49,18 +49,19 @@ fun NuevoGastoScreen(
         keyboardController?.show()
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .statusBarsPadding()
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Lista de Gastos > Registrar Nuevo Gasto",
-                modifier = Modifier.padding(top = 8.dp),
+                text = "Lista de Gastos > Nuevo Gasto",
+                modifier = Modifier.padding(top = 0.dp),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold
             )
