@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import com.rodr.chauchero.data.local.AppDatabase
 import com.rodr.chauchero.data.local.GastoDao
+import com.rodr.chauchero.data.local.CategoriaDao
 import com.rodr.chauchero.data.local.PerfilUsuarioDao
 import com.rodr.chauchero.data.repository.GastoRepository
 import com.rodr.chauchero.data.repository.PerfilUsuarioRepository
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
         val (gastoRepository, perfilRepository) = try {
             val database = AppDatabase.getDatabase(applicationContext)
             Pair(
-                GastoRepository(database.gastoDao()),
+                GastoRepository(database.gastoDao(), database.categoriaDao()),
                 PerfilUsuarioRepository(database.perfilUsuarioDao())
             )
         } catch (e: Exception) {
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
 
             // Backing state flows para los DAOs falsos
             val gastosState = MutableStateFlow<List<com.rodr.chauchero.model.Gasto>>(emptyList())
+            val categoriasState = MutableStateFlow<List<com.rodr.chauchero.model.Categoria>>(emptyList())
             val perfilState = MutableStateFlow<com.rodr.chauchero.model.PerfilUsuario?>(null)
 
             val fakeGastoDao = object : GastoDao {
@@ -88,8 +90,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            val fakeCategoriaDao = object : CategoriaDao {
+                override fun mostrarTodasLasCategorias(): Flow<List<com.rodr.chauchero.model.Categoria>> =
+                    categoriasState
+
+                override suspend fun insertarCategoria(
+                    categoria: com.rodr.chauchero.model.Categoria
+                ): Long {
+                    categoriasState.value = categoriasState.value + categoria
+                    return categoria.idCategoria.toLong()
+                }
+            }
+
             Pair(
-                GastoRepository(fakeGastoDao),
+                GastoRepository(fakeGastoDao, fakeCategoriaDao),
                 PerfilUsuarioRepository(fakePerfilDao)
             )
         }

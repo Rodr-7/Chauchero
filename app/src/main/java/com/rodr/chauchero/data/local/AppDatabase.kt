@@ -7,12 +7,18 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.rodr.chauchero.model.Gasto
 import com.rodr.chauchero.model.PerfilUsuario
+import com.rodr.chauchero.model.Categoria
 
-@Database(entities = [PerfilUsuario::class, Gasto::class], version = 1, exportSchema = false)
+@Database(
+    entities = [PerfilUsuario::class, Categoria::class, Gasto::class],
+    version = 2,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun gastoDao(): GastoDao
+    abstract fun categoriaDao(): CategoriaDao
     abstract fun perfilUsuarioDao(): PerfilUsuarioDao
 
     companion object {
@@ -25,7 +31,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "chauchero_database"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

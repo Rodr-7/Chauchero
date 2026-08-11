@@ -1,6 +1,8 @@
 package com.rodr.chauchero.data.repository
 
 import com.rodr.chauchero.data.local.GastoDao
+import com.rodr.chauchero.data.local.CategoriaDao
+import com.rodr.chauchero.model.Categoria
 import com.rodr.chauchero.model.Gasto
 import kotlinx.coroutines.flow.Flow
 
@@ -9,10 +11,19 @@ import kotlinx.coroutines.flow.Flow
  * Abstrae el acceso a GastoDao para los ViewModels bajo el principio de
  * Single Source of Truth.
  */
-class GastoRepository(private val gastoDao: GastoDao) {
+class GastoRepository(
+    private val gastoDao: GastoDao,
+    private val categoriaDao: CategoriaDao
+) {
 
     // Flujo reactivo que expone la lista completa de gastos en tiempo real
     val todosLosGastos: Flow<List<Gasto>> = gastoDao.mostrarTodosLosGastos()
+
+    val todasLasCategorias: Flow<List<Categoria>> = categoriaDao.mostrarTodasLasCategorias()
+
+    suspend fun insertarCategoria(categoria: Categoria): Long {
+        return categoriaDao.insertarCategoria(categoria)
+    }
 
     // Obtiene un gasto individual de forma reactiva por su ID
     fun obtenerGastoPorId(idGasto: Int): Flow<Gasto?> {
