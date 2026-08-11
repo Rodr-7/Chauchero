@@ -42,6 +42,9 @@ fun ListaGastosScreen(
     val onDelete: (Int) -> Unit = remember(viewModel) {
         viewModel::borrarGasto
     }
+    val categoriasVisualesPorId = remember(categoriasPorId) {
+        categoriasPorId.mapValues { (_, categoria) -> categoria.toBadgeUiModel() }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -110,7 +113,7 @@ fun ListaGastosScreen(
                     ) { gasto ->
                         GastoItemCard(
                             gasto = gasto,
-                            categoria = categoriasPorId[gasto.idCategoria],
+                            categoria = categoriasVisualesPorId[gasto.idCategoria],
                             onTogglePagado = onTogglePagado,
                             onDelete = onDelete
                         )
@@ -122,25 +125,36 @@ fun ListaGastosScreen(
 }
 
 @Composable
-private fun CategoryBadge(categoria: Categoria?) {
-    val backgroundColor = remember(categoria?.colorHex) {
-        categoria?.colorHex?.toComposeColor() ?: Color.Gray
-    }
-    val contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
-    
+private fun CategoryBadge(categoria: CategoryBadgeUiModel?) {
     Surface(
-        color = backgroundColor,
+        color = categoria?.backgroundColor ?: Color.Gray,
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.padding(vertical = 2.dp)
     ) {
         Text(
-            text = categoria?.nombre ?: "Sin categoría",
+            text = categoria?.nombre ?: SIN_CATEGORIA,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = contentColor,
+            color = categoria?.contentColor ?: Color.White,
             fontWeight = FontWeight.Bold
         )
     }
+}
+
+@Immutable
+private data class CategoryBadgeUiModel(
+    val nombre: String,
+    val backgroundColor: Color,
+    val contentColor: Color
+)
+
+private fun Categoria.toBadgeUiModel(): CategoryBadgeUiModel {
+    val backgroundColor = colorHex.toComposeColor()
+    return CategoryBadgeUiModel(
+        nombre = nombre,
+        backgroundColor = backgroundColor,
+        contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
+    )
 }
 
 private fun String.toComposeColor(): Color = runCatching {
@@ -152,70 +166,65 @@ private fun String.toComposeColor(): Color = runCatching {
  * Incluye la lógica visual para tachar el texto cuando el estado es pagado (CU-02).
  */
 @Composable
-fun GastoItemCard(
+private fun GastoItemCard(
     gasto: Gasto,
-    categoria: Categoria?,
+    categoria: CategoryBadgeUiModel?,
     onTogglePagado: (Gasto) -> Unit,
     onDelete: (Int) -> Unit
 ) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
-            ) {
-                Checkbox(
-                    checked = gasto.estadoPagado,
-                    onCheckedChange = { onTogglePagado(gasto) }
-                )
+            Checkbox(
+                checked = gasto.estadoPagado,
+                onCheckedChange = { onTogglePagado(gasto) }
+            )
 
-                Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = gasto.nombreGasto,
-                            style = MaterialTheme.typography.titleMedium,
-                            textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None,
-                            modifier = Modifier.weight(1f),
-                            maxLines = 1
-                        )
-                        CategoryBadge(categoria = categoria)
-                    }
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = gasto.nombreGasto,
+                        style = MaterialTheme.typography.titleMedium,
+                        textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1
+                    )
+                    CategoryBadge(categoria = categoria)
+                }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "$${gasto.valor}",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (gasto.estadoPagado) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
-                            textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None
-                        )
-                        Text(
-                            text = "Prioridad: ${gasto.prioridad}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 2.dp)
-                        )
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "$${gasto.valor}",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (gasto.estadoPagado) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
+                        textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None
+                    )
+                    Text(
+                        text = "Prioridad: ${gasto.prioridad}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 2.dp)
+                    )
                 }
             }
 
@@ -232,3 +241,4 @@ fun GastoItemCard(
 }
 
 private const val GASTO_ITEM_CONTENT_TYPE = "gasto"
+private const val SIN_CATEGORIA = "Sin categoría"
