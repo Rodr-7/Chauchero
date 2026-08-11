@@ -3,6 +3,7 @@ package com.rodr.chauchero.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rodr.chauchero.data.repository.GastoRepository
+import com.rodr.chauchero.model.Categoria
 import com.rodr.chauchero.model.Gasto
 import com.rodr.chauchero.model.Prioridad
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +24,15 @@ class GastosViewModel(
 
     private val _ordenSeleccionado = MutableStateFlow(OrdenGastos.VALOR_ASCENDENTE)
     val ordenSeleccionado: StateFlow<OrdenGastos> = _ordenSeleccionado.asStateFlow()
+    private val _errorCategoria = MutableStateFlow<String?>(null)
+    val errorCategoria: StateFlow<String?> = _errorCategoria.asStateFlow()
+
+    val categorias: StateFlow<List<Categoria>> = gastoRepository.todasLasCategorias
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // Combina Room con el criterio seleccionado para ordenar reactivamente.
     val todosLosGastos: StateFlow<List<Gasto>> = combine(
@@ -46,26 +56,48 @@ class GastosViewModel(
     fun registrarGasto(
         idPerfil: Int,
         nombreGasto: String,
-        categoria: String,
+        idCategoria: Int,
         prioridad: Prioridad,
         valor: Int
     ) {
         val nombreLimpio = nombreGasto.trim()
 
         // Validación estricta: bloquea nombres vacíos o montos negativos (TC-07)
-        if (nombreLimpio.isEmpty() || valor < 0) return
+        if (nombreLimpio.isEmpty() || idCategoria <= 0 || valor < 0) return
 
         viewModelScope.launch {
             val nuevoGasto = Gasto(
                 idPerfil = idPerfil,
                 nombreGasto = nombreLimpio,
-                categoria = categoria.trim(),
+                idCategoria = idCategoria,
                 prioridad = prioridad,
                 valor = valor,
                 estadoPagado = false
             )
             gastoRepository.insertarGasto(nuevoGasto)
         }
+    }
+
+    fun agregarCategoria(nombre: String, colorHex: String) {
+        val nombreLimpio = nombre.trim()
+        val colorNormalizado = colorHex.trim().uppercase()
+        if (nombreLimpio.isEmpty() || !COLOR_HEX_REGEX.matches(colorNormalizado)) return
+
+        viewModelScope.launch {
+            runCatching {
+                gastoRepository.insertarCategoria(
+                    Categoria(nombre = nombreLimpio, colorHex = colorNormalizado)
+                )
+            }.onSuccess {
+                _errorCategoria.value = null
+            }.onFailure {
+                _errorCategoria.value = "No se pudo guardar la categoría."
+            }
+        }
+    }
+
+    fun limpiarErrorCategoria() {
+        _errorCategoria.value = null
     }
 
     /**
@@ -88,6 +120,8 @@ class GastosViewModel(
         }
     }
 }
+
+private val COLOR_HEX_REGEX = Regex("^#[0-9A-F]{6}$")
 
 enum class OrdenGastos(val etiqueta: String) {
     VALOR_ASCENDENTE("Valor: menor a mayor"),
