@@ -11,12 +11,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rodr.chauchero.model.Categoria
 import com.rodr.chauchero.model.Gasto
 import com.rodr.chauchero.ui.viewmodels.GastosViewModel
 import com.rodr.chauchero.ui.viewmodels.OrdenGastos
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 /**
  * Pantalla de Listado e Historial de Gastos (CU-01 / CU-02).
@@ -29,6 +33,7 @@ fun ListaGastosScreen(
     onNavigateToNuevoGasto: () -> Unit
 ) {
     val listaGastos by viewModel.todosLosGastos.collectAsState()
+    val categorias by viewModel.categorias.collectAsState()
     val ordenSeleccionado by viewModel.ordenSeleccionado.collectAsState()
     var menuOrdenAbierto by remember { mutableStateOf(false) }
 
@@ -93,8 +98,10 @@ fun ListaGastosScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(listaGastos, key = { it.idGasto }) { gasto ->
+                        val categoria = categorias.find { it.idCategoria == gasto.idCategoria }
                         GastoItemCard(
                             gasto = gasto,
+                            categoria = categoria,
                             onTogglePagado = { viewModel.alternarEstadoPago(gasto) },
                             onDelete = { viewModel.borrarGasto(gasto.idGasto) }
                         )
@@ -105,6 +112,30 @@ fun ListaGastosScreen(
     }
 }
 
+@Composable
+private fun CategoryBadge(categoria: Categoria?) {
+    val backgroundColor = categoria?.colorHex?.toComposeColor() ?: Color.Gray
+    val contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
+    
+    Surface(
+        color = backgroundColor,
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        Text(
+            text = categoria?.nombre ?: "Sin categoría",
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = contentColor,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+private fun String.toComposeColor(): Color = runCatching {
+    Color(android.graphics.Color.parseColor(this))
+}.getOrDefault(Color.Gray)
+
 /**
  * Componente Stateless para representar una tarjeta individual de gasto.
  * Incluye la lógica visual para tachar el texto cuando el estado es pagado (CU-02).
@@ -112,6 +143,7 @@ fun ListaGastosScreen(
 @Composable
 fun GastoItemCard(
     gasto: Gasto,
+    categoria: Categoria?,
     onTogglePagado: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -136,22 +168,43 @@ fun GastoItemCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Column {
-                    Text(
-                        text = gasto.nombreGasto,
-                        style = MaterialTheme.typography.titleMedium,
-                        // Si está pagado, se muestra tachado visualmente cumpliendo CU-02
-                        textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None
-                    )
-                    Text(
-                        text = "Categoría: ${gasto.categoria} | Prioridad: ${gasto.prioridad}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Valor: $${gasto.valor}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = gasto.nombreGasto,
+                            style = MaterialTheme.typography.titleMedium,
+                            textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1
+                        )
+                        CategoryBadge(categoria = categoria)
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "$${gasto.valor}",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (gasto.estadoPagado) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
+                            textDecoration = if (gasto.estadoPagado) TextDecoration.LineThrough else TextDecoration.None
+                        )
+                        Text(
+                            text = "Prioridad: ${gasto.prioridad}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                    }
                 }
             }
 
