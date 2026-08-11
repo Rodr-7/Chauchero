@@ -25,6 +25,8 @@ class GastosViewModel(
 
     private val _ordenSeleccionado = MutableStateFlow(OrdenGastos.VALOR_ASCENDENTE)
     val ordenSeleccionado: StateFlow<OrdenGastos> = _ordenSeleccionado.asStateFlow()
+    private val _pagadosAlFinal = MutableStateFlow(false)
+    val pagadosAlFinal: StateFlow<Boolean> = _pagadosAlFinal.asStateFlow()
     private val _errorCategoria = MutableStateFlow<String?>(null)
     val errorCategoria: StateFlow<String?> = _errorCategoria.asStateFlow()
 
@@ -51,8 +53,9 @@ class GastosViewModel(
     // Combina Room con el criterio seleccionado para ordenar reactivamente.
     val todosLosGastos: StateFlow<List<Gasto>> = combine(
         gastoRepository.todosLosGastos,
-        ordenSeleccionado
-    ) { gastos, orden -> gastos.ordenadosPor(orden) }
+        ordenSeleccionado,
+        pagadosAlFinal
+    ) { gastos, orden, alFinal -> gastos.ordenadosPor(orden, alFinal) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -61,6 +64,10 @@ class GastosViewModel(
 
     fun seleccionarOrden(orden: OrdenGastos) {
         _ordenSeleccionado.value = orden
+    }
+
+    fun alternarPagadosAlFinal() {
+        _pagadosAlFinal.value = !_pagadosAlFinal.value
     }
 
     /**
@@ -146,8 +153,8 @@ enum class OrdenGastos(val etiqueta: String) {
     PRIORIDAD_ASCENDENTE("Prioridad: Bajo a Alto")
 }
 
-internal fun List<Gasto>.ordenadosPor(orden: OrdenGastos): List<Gasto> {
-    val comparator = when (orden) {
+internal fun List<Gasto>.ordenadosPor(orden: OrdenGastos, pagadosAlFinal: Boolean): List<Gasto> {
+    val baseComparator = when (orden) {
         OrdenGastos.VALOR_ASCENDENTE -> compareBy<Gasto> { it.valor }
         OrdenGastos.VALOR_DESCENDENTE -> compareByDescending<Gasto> { it.valor }
         OrdenGastos.CATEGORIA_ASCENDENTE -> compareBy { it.categoria.lowercase() }
@@ -155,7 +162,14 @@ internal fun List<Gasto>.ordenadosPor(orden: OrdenGastos): List<Gasto> {
         OrdenGastos.PRIORIDAD_DESCENDENTE -> compareBy { it.prioridad.ordinal }
         OrdenGastos.PRIORIDAD_ASCENDENTE -> compareByDescending { it.prioridad.ordinal }
     }
-    return sortedWith(comparator.thenBy { it.idGasto })
+
+    val finalComparator = if (pagadosAlFinal) {
+        compareBy<Gasto> { it.estadoPagado }.then(baseComparator)
+    } else {
+        baseComparator
+    }
+
+    return sortedWith(finalComparator.thenBy { it.idGasto })
 }
 
 internal fun List<Categoria>.indexadasPorId(): Map<Int, Categoria> = associateBy(Categoria::idCategoria)

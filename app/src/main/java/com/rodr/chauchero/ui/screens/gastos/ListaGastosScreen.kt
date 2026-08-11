@@ -35,6 +35,7 @@ fun ListaGastosScreen(
     val listaGastos by viewModel.todosLosGastos.collectAsState()
     val categoriasPorId by viewModel.categoriasPorId.collectAsState()
     val ordenSeleccionado by viewModel.ordenSeleccionado.collectAsState()
+    val pagadosAlFinal by viewModel.pagadosAlFinal.collectAsState()
     var menuOrdenAbierto by remember { mutableStateOf(false) }
     val onTogglePagado: (Gasto) -> Unit = remember(viewModel) {
         viewModel::alternarEstadoPago
@@ -70,6 +71,18 @@ fun ListaGastosScreen(
                                 }
                             )
                         }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        DropdownMenuItem(
+                            text = { Text("Pagados al final") },
+                            onClick = {
+                                viewModel.alternarPagadosAlFinal()
+                                // No cerramos el menú para permitir cambiar varios a la vez si fuera necesario, 
+                                // aunque aquí solo hay uno. En este caso mejor dejarlo abierto para que el usuario vea el check.
+                            },
+                            leadingIcon = {
+                                Checkbox(checked = pagadosAlFinal, onCheckedChange = null)
+                            }
+                        )
                     }
                 }
                 Spacer(Modifier.height(12.dp))
