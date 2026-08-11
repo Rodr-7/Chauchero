@@ -33,9 +33,15 @@ fun ListaGastosScreen(
     onNavigateToNuevoGasto: () -> Unit
 ) {
     val listaGastos by viewModel.todosLosGastos.collectAsState()
-    val categorias by viewModel.categorias.collectAsState()
+    val categoriasPorId by viewModel.categoriasPorId.collectAsState()
     val ordenSeleccionado by viewModel.ordenSeleccionado.collectAsState()
     var menuOrdenAbierto by remember { mutableStateOf(false) }
+    val onTogglePagado: (Gasto) -> Unit = remember(viewModel) {
+        viewModel::alternarEstadoPago
+    }
+    val onDelete: (Int) -> Unit = remember(viewModel) {
+        viewModel::borrarGasto
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -97,13 +103,16 @@ fun ListaGastosScreen(
                         .padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(listaGastos, key = { it.idGasto }) { gasto ->
-                        val categoria = categorias.find { it.idCategoria == gasto.idCategoria }
+                    items(
+                        items = listaGastos,
+                        key = Gasto::idGasto,
+                        contentType = { GASTO_ITEM_CONTENT_TYPE }
+                    ) { gasto ->
                         GastoItemCard(
                             gasto = gasto,
-                            categoria = categoria,
-                            onTogglePagado = { viewModel.alternarEstadoPago(gasto) },
-                            onDelete = { viewModel.borrarGasto(gasto.idGasto) }
+                            categoria = categoriasPorId[gasto.idCategoria],
+                            onTogglePagado = onTogglePagado,
+                            onDelete = onDelete
                         )
                     }
                 }
@@ -114,7 +123,9 @@ fun ListaGastosScreen(
 
 @Composable
 private fun CategoryBadge(categoria: Categoria?) {
-    val backgroundColor = categoria?.colorHex?.toComposeColor() ?: Color.Gray
+    val backgroundColor = remember(categoria?.colorHex) {
+        categoria?.colorHex?.toComposeColor() ?: Color.Gray
+    }
     val contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
     
     Surface(
@@ -144,8 +155,8 @@ private fun String.toComposeColor(): Color = runCatching {
 fun GastoItemCard(
     gasto: Gasto,
     categoria: Categoria?,
-    onTogglePagado: () -> Unit,
-    onDelete: () -> Unit
+    onTogglePagado: (Gasto) -> Unit,
+    onDelete: (Int) -> Unit
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
@@ -163,7 +174,7 @@ fun GastoItemCard(
             ) {
                 Checkbox(
                     checked = gasto.estadoPagado,
-                    onCheckedChange = { onTogglePagado() }
+                    onCheckedChange = { onTogglePagado(gasto) }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -209,7 +220,7 @@ fun GastoItemCard(
             }
 
             // Botón de eliminación rápida
-            IconButton(onClick = onDelete) {
+            IconButton(onClick = { onDelete(gasto.idGasto) }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Eliminar gasto",
@@ -219,3 +230,5 @@ fun GastoItemCard(
         }
     }
 }
+
+private const val GASTO_ITEM_CONTENT_TYPE = "gasto"

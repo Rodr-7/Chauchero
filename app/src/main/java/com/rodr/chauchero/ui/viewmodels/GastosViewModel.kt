@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,6 +33,19 @@ class GastosViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+
+    /**
+     * Índice estable para resolver la categoría de cada gasto en tiempo constante desde la UI.
+     * Solo se reconstruye cuando Room emite un cambio en las categorías, no durante el scroll ni
+     * cuando cambia el estado de pago de un gasto.
+     */
+    val categoriasPorId: StateFlow<Map<Int, Categoria>> = categorias
+        .map(List<Categoria>::indexadasPorId)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
         )
 
     // Combina Room con el criterio seleccionado para ordenar reactivamente.
@@ -143,3 +157,5 @@ internal fun List<Gasto>.ordenadosPor(orden: OrdenGastos): List<Gasto> {
     }
     return sortedWith(comparator.thenBy { it.idGasto })
 }
+
+internal fun List<Categoria>.indexadasPorId(): Map<Int, Categoria> = associateBy(Categoria::idCategoria)
