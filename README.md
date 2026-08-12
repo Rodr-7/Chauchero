@@ -3,9 +3,9 @@
 
 **App de Presupuesto Personal y Seguimiento de Gastos para Android**
 
-Chauchero es una aplicación nativa para Android diseñada para ofrecer un control sobre tus finanzas personales. Al registrar tus gastos e ingresos fijos mensuales, Chauchero calcula y muestra tu liquidez mensual real y tu deuda pendiente, adaptándose dinámicamente a medida que marcas tus gastos mensuales fijos como "pagados" o "pendientes".
+Chauchero es una aplicación nativa de Android diseñada para ofrecer un control sobre tus finanzas personales. Al registrar tus gastos e ingresos fijos mensuales, Chauchero calcula y muestra tu liquidez mensual real y tu deuda pendiente, adaptándose dinámicamente a medida que marcas tus gastos mensuales fijos como "pagados" o "pendientes".
 
-Esta App surgió a partir de un sistema casero de gestión de mis finanzas personales basado en hojas de cálculo de Notion, Chauchero traslada esa lógica a un entorno móvil profesional, rápido y completamente reactivo.
+Esta App surgió a partir de un sistema casero de gestión de mis finanzas personales basado en hojas de cálculo y bases de datos de Notion. Chauchero traslada esa lógica a un entorno móvil de uso ágil y reactivo, apoyado por una interfaz visual simple pero bonita.
 
 ## ✨ Características Principales
 
@@ -17,7 +17,7 @@ Esta App surgió a partir de un sistema casero de gestión de mis finanzas perso
 
 ## 🛠️ Pila Tecnológica y Arquitectura
 
-Este proyecto fue construido aplicando rigurosos estándares de ingeniería de software, priorizando la mantenibilidad, escalabilidad y la prevención del *Feature Creep*.
+Este proyecto fue construido aplicando estándares de ingeniería de software, priorizando la mantenibilidad y escalabilidad.
 
 - **Plataforma:** Android (Nativo)
 - **Lenguaje:** Kotlin
@@ -28,25 +28,48 @@ Este proyecto fue construido aplicando rigurosos estándares de ingeniería de s
 
 ## 🗂️ Estructura del Proyecto
 
-El código fuente está organizado según la estructura real del paquete `com.rodr.chauchero`, separando datos, modelos y presentación:
+El código fuente está organizado según la estructura real del paquete `com.rodr.chauchero`, separando en capas de datos, modelos y presentación (Data, Domain/Model, Presentation):
 
-```
+```bash
 com.rodr.chauchero
 │
-├── data/                   # CAPA DE DATOS (Single Source of Truth)
-│   ├── local/              # Base de datos Room (AppDatabase, Converters, DAOs)
-│   └── repository/         # Abstracción y acceso único a los datos
+├── data/                      # CAPA DE DATOS (Single Source of Truth)
+│   ├── local/                 # Base de datos Room (AppDatabase, Converters, DAOs)
+│   │   ├── AppDatabase.kt
+│   │   ├── CategoriaDao.kt
+│   │   ├── Converters.kt
+│   │   ├── GastoDao.kt
+│   │   └── PerfilUsuarioDao.kt
+│   └── repository/            # Abstracción y acceso único a los datos
+│       ├── GastoRepository.kt
+│       └── PerfilUsuarioRepository.kt
 │
-├── model/                  # MODELOS DE DOMINIO
-│   ├── Gasto.kt            # Entidad Gasto
-│   ├── PerfilUsuario.kt    # Entidad PerfilUsuario
-│   └── Prioridad.kt        # Enum (ALTO, MEDIO, BAJO)
+├── model/                     # MODELOS DE DOMINIO Y ENTIDADES
+│   ├── Categoria.kt           # Entidad Categoria
+│   ├── Gasto.kt               # Entidad Gasto
+│   ├── PerfilUsuario.kt       # Entidad PerfilUsuario
+│   └── Prioridad.kt           # Enum (ALTO, MEDIO, BAJO)
 │
-└── ui/                     # CAPA DE PRESENTACIÓN (UI)
-    ├── theme/              # Colores, tipografía y formas
-    ├── components/         # Bloques visuales reutilizables (Stateless)
-    ├── screens/            # Vistas completas por módulo (Stateful)
-    └── viewmodels/         # Controladores de estado reactivo
+└── ui/                        # CAPA DE PRESENTACIÓN (UI)
+├── navigation/            # Gestión de rutas y grafo de navegación
+│   ├── NavGraph.kt
+│   └── Screen.kt
+├── theme/                 # Sistema de diseño Material 3 (Colores, tipografía y formas)
+│   ├── Color.kt
+│   ├── Theme.kt
+│   └── Type.kt
+├── screens/               # Vistas completas por módulo (Stateful)
+│   ├── gastos/
+│   │   ├── ListaGastosScreen.kt
+│   │   └── NuevoGastoScreen.kt
+│   ├── onboarding/
+│   │   └── OnboardingScreen.kt
+│   └── presupuesto/
+│       └── PresupuestoScreen.kt
+└── viewmodels/            # Controladores de estado reactivo (StateFlow)
+├── GastosViewModel.kt
+├── OnboardingViewModel.kt
+└── PresupuestoViewModel.kt
 ```
 
 ---
@@ -66,14 +89,13 @@ Para clonar, abrir, sincronizar, compilar y ejecutar Chauchero desde Windows, Li
 - Conexión a internet durante la primera sincronización para descargar Gradle, plugins y dependencias.
 
 > No configures rutas absolutas personales dentro de archivos versionados del repositorio.
-
----
+> 
 
 ### Archivos que deben estar en Git
 
 Estos archivos sí deben permanecer versionados:
 
-```text
+```
 settings.gradle.kts
 build.gradle.kts
 app/build.gradle.kts
@@ -96,7 +118,7 @@ El Gradle Wrapper es obligatorio para que todos usen la misma versión de Gradle
 
 Estos archivos o carpetas deben ser locales de cada computador:
 
-```text
+```
 local.properties
 .gradle/
 build/
@@ -130,8 +152,8 @@ cd Chauchero
 3. Elige la carpeta raíz del repositorio, no la carpeta `app`.
 4. Espera a que Android Studio detecte el proyecto Gradle.
 5. Configura **Gradle JDK** en JDK 17:
-   - Windows/Linux: **File > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
-   - macOS: **Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
+    - Windows/Linux: **File > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
+    - macOS: **Android Studio > Settings > Build, Execution, Deployment > Build Tools > Gradle**.
 6. Ejecuta **Sync Project with Gradle Files**.
 
 ---
@@ -148,7 +170,7 @@ Desde Android Studio abre **SDK Manager** e instala:
 
 La aplicación tiene:
 
-```text
+```
 compileSdk = 34
 targetSdk = 34
 minSdk = 24
@@ -159,8 +181,6 @@ Por lo tanto:
 - Para compilar necesitas SDK Platform 34.
 - Para ejecutar necesitas un emulador o dispositivo con API 24 o superior.
 
----
-
 ### Configurar `local.properties`
 
 Android Studio normalmente genera `local.properties` automáticamente al abrir el proyecto.
@@ -169,19 +189,19 @@ Si necesitas crearlo manualmente, debe quedar en la raíz del repositorio y cont
 
 Ejemplo en Windows:
 
-```properties
+```
 sdk.dir=C\:\\Users\\TU_USUARIO\\AppData\\Local\\Android\\Sdk
 ```
 
 Ejemplo en macOS:
 
-```properties
+```
 sdk.dir=/Users/TU_USUARIO/Library/Android/sdk
 ```
 
 Ejemplo en Linux:
 
-```properties
+```
 sdk.dir=/home/TU_USUARIO/Android/Sdk
 ```
 
@@ -218,7 +238,7 @@ Linux/macOS:
 
 Windows:
 
-```bat
+```bash
 gradlew.bat --version
 gradlew.bat test
 gradlew.bat lint
@@ -236,13 +256,19 @@ gradlew.bat assembleDebug
 
 La app funciona localmente y no requiere servicios web, Firebase, Retrofit ni conexión con bancos.
 
+---
+
 ## 🗺️ Roadmap
 
-La versión 1.0.0 contempla el MVP (Producto Mínimo Viable) central. Las siguientes versiones ya documentadas en el Product Backlog incluyen:
+Las siguientes funciones por implementar ya documentadas en el Product Backlog incluyen:
 
 - Reinicio Mensual y Gastos temporales
-- Implementación de arquitectura Multi-perfil (gestión de múltiples cuentas en un mismo dispositivo).
-- Gráficos estadísticos del historial de gastos.
-- Implementación de notificaciones locales para vencimientos.
+- Habilita la función de modificar el nombre, valor y categoría de un Gasto.
+- Habilita la función de modificar el nombre y color de una Categoría. Se accederá a esta función al mantener pulsada una etiqueta de Categoria en la pantalla de Nuevo Gasto o de Modificación de Gasto.
+- Implementación de un acceso directo fuera de la app que permita actualizar el saldo (Misma acción que botón Actualizar saldo)
 
-*Diseñado y desarrollado como proyecto de aplicación práctica de Ingeniería de Software.*
+---
+
+*Diseñado y desarrollado como proyecto personal de aplicación práctica de Ingeniería de Software.*
+
+Apoyado por IA, impulsado por la curiosidad y deseo de creación del desarrollador.
